@@ -31,8 +31,30 @@ class MainTest {
     }
 
     @Test
-    public void largeOrder() {
-        String[] input = {"apple", "orange", "apple", "orange", "apple", "orange", "apple", "orange", "apple", "orange", "apple", "orange"};
-        assertEquals("$5.10", Main.orderTotal(input));
+    public void buyOneGetOne2Apples() {
+        // Only 1 apple should be free
+        String[] input = {"apple", "apple"};
+        assertEquals("$0.60", Main.orderTotal(input));
+    }
+
+    @Test
+    public void buyOneGetOne3Apples() {
+        // Only 1 apple should be free
+        String[] input = {"apple", "apple", "apple"};
+        assertEquals("$1.20", Main.orderTotal(input));
+    }
+
+    @Test
+    public void buyTwoGetOne3Oranges() {
+        // Only 1 orange should be free
+        String[] input = {"orange", "orange", "orange"};
+        assertEquals("$0.50", Main.orderTotal(input));
+    }
+
+    @Test
+    public void buyTwoGetOne4Oranges() {
+        // Only 1 orange should be free
+        String[] input = {"orange", "orange", "orange", "orange"};
+        assertEquals("$0.75", Main.orderTotal(input));
     }
 }

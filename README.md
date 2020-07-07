@@ -1,6 +1,7 @@
 # CommandLineOrders
 Simple command line application for ordering some delicious fruits. Assumes input is a list of strings.
 Only valid fruits are "apple" and "orange". Apples cost $0.60 and Oranges $0.25.
+Apples are buy-one-get-one free. Oranges are buy-two-get-one free.
 
 Running with IntelliJ:
 1. Import from VC
