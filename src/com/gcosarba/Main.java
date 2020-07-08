@@ -1,33 +1,81 @@
 package com.gcosarba;
 
-import java.text.NumberFormat;
-import java.util.Locale;
+import com.gcosarba.notifications.Message;
+import com.gcosarba.notifications.NotificationMetadataService;
+import com.gcosarba.orders.Notification;
+import com.gcosarba.orders.Order;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 public class Main {
-    public static void main(String[] args) {
-        System.out.println("Apples are now buy 1 get 1 free and oranges are buy 2 get 1 free");
-        System.out.println("Your order total is: " + orderTotal(args));
-    }
 
-    public static String orderTotal(String[] args) {
-        int appleCount = 0;
-        int orangeCount = 0;
-        for (String item : args) {
-            if (item.equals("apple")) {
-                appleCount++;
-            } else if (item.equals("orange")) {
-                orangeCount++;
-            }
+    /**
+     *
+     * By the time the request his this service I would hope it has gone through an API gateway:
+     * Request Validation
+     * Authentication/Authorization: Determine if the request is allowed to hit the end point it wants before it hits it
+     * Rate Limiting: Prevent DDoS. Throttle users abusing service
+     * Routing: Have gateway make calls to all relevant services instead of client and consolidate response.
+     * Caching: For data that only needs to be recalculated periodically, return cached response instead of calling service
+     * Load balancing: If we need to scale a particular service, we need something to manage sending request across instances
+     *
+     */
+
+    public static void main(String[] args) {
+        // Instance the order
+        Order order = new Order(args);
+        // Don't process empty orders
+        if(order.isEmpty()){
+            System.out.println("Invalid order. Please order at least one item.");
+            System.exit(0);
         }
 
-        // Buy 1 get 1 = divide by 2 and add remainder.
-        appleCount = appleCount/2 + appleCount % 2;
+        // TODO insert order into DB
 
-        // Buy 2 get 1 = 2 * divide by 3 and add remainder
-        orangeCount = 2*(orangeCount/3) + orangeCount % 3;
+        // Right now all we need to succeed is a valid order. Notify customer.
+        // Perhaps this should just have an order ID instead of the entire order
+        Notification notification = new Notification("orderProcessed", order);
 
-        double sum = (appleCount * .60 + orangeCount * .25);
-        NumberFormat usnf = NumberFormat.getCurrencyInstance(Locale.US);
-        return(usnf.format(sum));
+        // Marshall JSON and send to notification service which for now is just a function
+        notificationService(notification);
     }
+
+    /**
+     * NotificationService should have 3 functions:
+     * 1. publish
+     * 2. create a topic
+     * 3. add subscriber to topic
+     *
+     * @param notification
+     */
+    public static void notificationService(Notification notification) {
+        // TODO add loadbalancer
+
+        /** make call to metadata service. Just an object for now
+        * This service gives us access to the metadata DB through a well defined interface to simply future
+        * development. This service can also act as a caching layer.
+        */
+        NotificationMetadataService metadata = new NotificationMetadataService();
+
+        /**
+         * In order to ensure each subscribers gets every messages at least once we need to put the message in
+         * temporary storage so the sender can retry it if it fails. For now we'll serialize it locally
+         */
+        Message message = new Message(metadata.getTopics().get("orderProcessed"), notification.getOrder());
+        String messageLocation;
+        try {
+            messageLocation = message.storeMessage();
+        }catch (IOException e){
+            System.out.println("Error occurred in Notification Service when attempting to store message.");
+            System.exit(1);
+        }
+
+        /**
+         * Time to send the message to all our subs with retry. For now its a print :)
+         */
+        System.out.println("Your order has been successfully processed");
+    }
+
 }
