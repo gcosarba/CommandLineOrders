@@ -1,22 +1,27 @@
 package com.gcosarba.orders;
 
+import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.UUID;
 
 // Model the resource
 // Would eventually want to get a library to marshal/unmarshal this to JSON
-public class Order {
-    // Needs an ID here when storing in DB. Generated
+public class Order implements Serializable {
+    // ID should be a generated field
+    private String ID;
     private final int apples;
     private final int oranges;
 
     public Order(int apples, int oranges) {
+        this.ID = UUID.randomUUID().toString();
         this.apples = apples;
         this.oranges = oranges;
     }
 
     public Order(String[] inputs) {
+        this.ID = UUID.randomUUID().toString();
         int appleCount = 0;
         int orangeCount = 0;
         for (String item : inputs) {
@@ -36,6 +41,10 @@ public class Order {
 
     public int getOranges() {
         return oranges;
+    }
+
+    public String getID() {
+        return ID;
     }
 
     public String orderTotal(){

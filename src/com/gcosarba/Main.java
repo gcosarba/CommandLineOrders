@@ -64,21 +64,24 @@ public class Main {
          * In order to ensure each subscribers gets every messages at least once we need to put the message in
          * temporary storage so the sender can retry it if it fails. For now we'll serialize it locally
          */
-        Message message = new Message(metadata.getTopics().get("orderProcessed"), notification.getOrder());
+        String[] subscribers = metadata.getTopics().get(notification.getTopic());
+        Message message = new Message(subscribers, notification.getOrder().getID());
 
-        //Still need to test this
-//        String messageLocation;
-//        try {
-//            messageLocation = message.storeMessage();
-//        }catch (IOException e){
-//            System.out.println("Error occurred in Notification Service when attempting to store message.");
-//            System.exit(1);
-//        }
+        // Not working :(
+        try {
+            message.storeMessage();
+        }catch (IOException e){
+            System.out.println("Failed to store message");
+        }
 
         /**
          * Time to send the message to all our subs with retry. For now its a print :)
+         * This should be deserializing from storage and getting the list of subscribers
          */
-        System.out.println("Your order has been successfully processed");
+        for(String item : subscribers){
+            //Replace with call to appropriate message queue or endpoint
+            System.out.println("Your order has been successfully processed");
+        }
     }
 
 }
