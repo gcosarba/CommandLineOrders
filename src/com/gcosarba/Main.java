@@ -31,6 +31,7 @@ public class Main {
             System.out.println("Invalid order. Please order at least one item.");
             System.exit(0);
         }
+        System.out.println("Your order total is: " + order.orderTotal());
 
         // TODO insert order into DB
 
@@ -64,13 +65,15 @@ public class Main {
          * temporary storage so the sender can retry it if it fails. For now we'll serialize it locally
          */
         Message message = new Message(metadata.getTopics().get("orderProcessed"), notification.getOrder());
-        String messageLocation;
-        try {
-            messageLocation = message.storeMessage();
-        }catch (IOException e){
-            System.out.println("Error occurred in Notification Service when attempting to store message.");
-            System.exit(1);
-        }
+
+        //Still need to test this
+//        String messageLocation;
+//        try {
+//            messageLocation = message.storeMessage();
+//        }catch (IOException e){
+//            System.out.println("Error occurred in Notification Service when attempting to store message.");
+//            System.exit(1);
+//        }
 
         /**
          * Time to send the message to all our subs with retry. For now its a print :)
